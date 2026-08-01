@@ -2,7 +2,9 @@ import os
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'super-secret-key-123'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///taskflow.db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DATABASE_PATH = os.path.join('instance', 'taskflow.db')
+    import os
 
-
+    class Config:
+        SECRET_KEY = os.environ.get('SECRET_KEY') or 'super-secret-key-123'
+        DATABASE_PATH = os.path.join('instance', 'taskflow.db')

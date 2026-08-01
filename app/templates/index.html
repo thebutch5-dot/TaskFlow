@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель завдань - TaskFlow{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="text-center p-2 mb-3 small" style="border-radius: .375rem; border: 1px solid; {% if category == 'danger' %}background-color: #f8d7da; color: #842029; border-color: #f5c2c7;{% else %}background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='Buch.jpg') }}" alt="Аватар" class="rounded-circle border border-2 border-success shadow-sm" style="width: 70px; height: 70px; object-fit: cover;">
+                <div>
+                    <h5 class="card-title mb-0">{{ current_user.username }}</h5>
+                    <p class="text-muted small mb-0">{{ current_user.email }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0 text-center">Нове завдання</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('tasks.create_task') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Назва завдання</label>
+                        <input type="text" name="title" class="form-control" required placeholder="Наприклад: Помити авто">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Опис</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Додайте деталі..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пріоритет</label>
+                        <select name="priority" class="form-select">
+                            <option value="Low">Низький (Low)</option>
+                            <option value="Medium" selected>Середній (Medium)</option>
+                            <option value="High">Високий (High)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 shadow-sm">Додати завдання</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h4 class="mb-0 text-secondary text-center">Список ваших завдань</h4>
+            </div>
+
+            {% if tasks %}
+                <ul class="list-group list-group-flush border-top">
+                    {% for task in tasks %}
+                        <li class="list-group-item p-3" style="background-color: {% if task.is_completed %}#f8f9fa{% elif task.priority == 'High' %}#800020{% elif task.priority == 'Medium' %}#ffa500{% else %}#ffffcc{% endif %}; color: {% if not task.is_completed and task.priority == 'High' %}#ffffff{% else %}#212529{% endif %};">
+                            <div class="d-flex mb-2" style="justify-content: space-between !important; align-items: flex-start !important;">
+                                <div>
+                                    <h5 class="mb-0 {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                                        {{ task.title }}
+                                    </h5>
+                                    <small class="{% if not task.is_completed and task.priority == 'High' %}text-light{% else %}text-muted{% endif %}" style="font-size: 0.75rem;">
+                                        Створено: {{ task.date_created.strftime('%d.%m.%Y %H:%M') }}
+                                    </small>
+                                </div>
+                                <div>
+                                    {% if task.priority == 'High' %}
+                                        <span class="badge bg-danger">High</span>
+                                    {% elif task.priority == 'Medium' %}
+                                        <span class="badge bg-warning text-dark">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">Low</span>
+                                    {% endif %}
+
+                                    {% if task.is_completed %}
+                                        <span class="badge bg-success ms-1">Виконано</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-1">В роботі</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if task.description %}
+                                <p class="small mb-3 {% if task.is_completed %}text-decoration-line-through text-muted{% elif task.priority == 'High' %}text-light{% else %}text-secondary{% endif %}">
+                                    {{ task.description }}
+                                </p>
+                            {% endif %}
+
+                            <div class="d-flex gap-2" style="justify-content: flex-end !important;">
+                                <form method="post" action="{{ url_for('tasks.toggle_task', task_id=task.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm {% if task.is_completed %}btn-outline-secondary{% elif task.priority == 'High' %}btn-outline-light{% else %}btn-outline-success{% endif %}">
+                                        {% if task.is_completed %}Відновити{% else %}Виконано{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ url_for('tasks.delete_task', task_id=task.id) }}" class="d-inline" onclick="return confirm('Ви впевнені, що хочете видалити це завдання?')">
+                                    <button type="submit" class="btn btn-sm {% if not task.is_completed and task.priority == 'High' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                        Видалити
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="card-body text-center py-5">
+                    <p class="text-muted mb-0">У вас поки немає завдань. Створіть перше у лівій панелі!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="p-5 bg-white rounded shadow-sm">
+            <h1 class="display-4 fw-bold text-success mb-3">TaskFlow</h1>
+            <p class="lead text-muted mb-4">Сучасний та зручний менеджер завдань для вашої продуктивності.</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg px-4 me-sm-3">Увійти</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary btn-lg px-4">Зареєструватися</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

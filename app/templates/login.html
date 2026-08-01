@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Вхід - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center p-2 mb-3 small" style="border-radius: .375rem;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="card-title text-center mb-4">Вхід у систему</h3>
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required placeholder="Ваш логін">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required placeholder="Ваш пароль">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Ввійти</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('auth.register') }}" class="small text-decoration-none">Немає аккаунта? Зареєструватися</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
